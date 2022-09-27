@@ -5,6 +5,7 @@ __pycache__/
 # Models files
 *.pth
 *.pt
+*.h5
 # C extensions
 *.so
 
