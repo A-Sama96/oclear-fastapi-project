@@ -3,7 +3,7 @@
 OClear FastAPI PyTorch Model deploy with nvidia/cuda base docker. Deployment's strategy for Kubernetes in AWS EKS can be found in k8s folder.
 
 ## Model
-All model will be load from a AWS S3 Bucket
+All model will be load from a AWS S3 Bucket.
 
 ## Guide
 This Deployment strategy come from a Medium Post. Detailed explaination can be found in this Medium article: 

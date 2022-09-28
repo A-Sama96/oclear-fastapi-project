@@ -4,7 +4,6 @@
 import os
 import sys
 import traceback
-from joblib import load
 
 import uvicorn
 from fastapi import FastAPI, Request, status
