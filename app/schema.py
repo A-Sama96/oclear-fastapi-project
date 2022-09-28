@@ -4,7 +4,7 @@
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 
-
+"""
 class RequestValidation(BaseModel):
     check_path: str
     signature_path: str
@@ -17,23 +17,17 @@ class ValidationCriteria(BaseModel):
     # date: str
     # name_recipient: str
     signature_check: List[float]
+"""
 
 
 class InferenceInput(BaseModel):
     """
     Input values for model inference
     """
-    sepal_length: float = Field(..., example=3.1,
-                                gt=0, title='sepal length (cm)')
-    sepal_width: float = Field(..., example=3.5, gt=0,
-                               title='sepal width (cm)')
-    petal_length: float = Field(..., example=3.4,
-                                gt=0, title='petal length (cm)')
-    petal_width: float = Field(..., example=3.0, gt=0,
-                               title='petal width (cm)')
-    check_path: List(str) = Field(..., example='versicolor',
-                                  title='Predicted class with highest probablity')
-    signature_path: str
+    check_path: List(str) = Field(..., example="['URL1', 'URL2']",
+                                  title="List de lien de chèque provenant de AWS S3")
+    signature_path: str = Field(..., example="['URL1', 'URL2']",
+                                title='List de lien de signature provenant de AWS S3')
 
 
 class InferenceResult(BaseModel):
@@ -41,28 +35,31 @@ class InferenceResult(BaseModel):
     Inference result from the model
     """
     is_crossed: bool = Field(..., example=False,
-                             title='Whether there is error')
-    amount_letter: str
-    amount_number: str
+                             title='Vérifie si le chèque est barré')
+    amount_letter: str = Field(..., example='deux cent cinquante milles',
+                               title='Montant en lettre')
+    amount_number: str = Field(..., example='250.000',
+                               title='Montant en chiffre')
     # location: str
     # date: str
     # name_recipient: str
-    signature_check: List[float]
+    signature_check: List[float] = Field(..., example='[80.9]',
+                                         title='Taux de correspondace de la signature')
 
 
 class InferenceResponse(BaseModel):
     """
     Output response for model inference
     """
-    error: bool = Field(..., example=False, title='Whether there is error')
-    results: InferenceResult = ...
+    error: bool = Field(..., example=False, title='Spécifie si il y a erreur')
+    results: List(InferenceResult) = ...
 
 
 class ErrorResponse(BaseModel):
     """
     Error response for the API
     """
-    error: bool = Field(..., example=True, title='Whether there is error')
-    message: str = Field(..., example='', title='Error message')
+    error: bool = Field(..., example=True, title='Spécifie si il y a erreur')
+    message: str = Field(..., example='', title='Message d\'erreur')
     traceback: str = Field(
-        None, example='', title='Detailed traceback of the error')
+        None, example='', title='Traceback détaillé de l\'erreur')

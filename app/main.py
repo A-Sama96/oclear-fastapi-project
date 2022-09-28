@@ -25,8 +25,8 @@ from schema import *
 
 # Initialize API Server
 app = FastAPI(
-    title="ML Model",
-    description="Description of the ML Model",
+    title="Oclear Check Reader",
+    description="Modèle ML permettant de lire les chèques",
     version="0.0.1",
     terms_of_service=None,
     contact=None,
@@ -61,7 +61,7 @@ async def startup_event():
 
     # add model and other preprocess tools too app state
     app.package = {
-        "scaler": load(CONFIG['SCALAR_PATH']),  # joblib.load
+        # "scaler": load(CONFIG['SCALAR_PATH']),  # joblib.load
         "model": model
     }
 
