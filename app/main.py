@@ -13,10 +13,15 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from aws import S3_CHECK_FOLDERNAME
 
 import torch
+import tensorflow as tf
 
-from model import Model
+from model import VGG16
+from util import relative_path_files_in_folder
+from aws import download_all_files_in_folder_from_s3, S3_BUCKET_NAME, S3_SIGNATURE_FOLDERNAME
+from oclear import detector
 from predict import predict
 from config import CONFIG
 from exception_handler import validation_exception_handler, python_exception_handler
@@ -53,53 +58,100 @@ async def startup_event():
     logger.info('PyTorch using device: {}'.format(CONFIG['DEVICE']))
 
     # Initialize the pytorch model
-    model = Model()
-    model.load_state_dict(torch.load(
-        CONFIG['MODEL_PATH'], map_location=torch.device(CONFIG['DEVICE'])))
-    model.eval()
+    device = torch.device(CONFIG['DEVICE'])
+    vgg = VGG16(29)
+    vgg.load_state_dict(torch.load('../models/best.pth', map_location=device))
 
     # add model and other preprocess tools too app state
     app.package = {
         # "scaler": load(CONFIG['SCALAR_PATH']),  # joblib.load
-        "model": model
+        "model": vgg
     }
 
 
-@app.post('/api/v1/predict',
+# @app.post('/api/v1/predict',
+#           response_model=InferenceResponse,
+#           responses={422: {"model": ErrorResponse},
+#                      500: {"model": ErrorResponse}}
+#           )
+# def do_predict(request: Request, body: InferenceInput):
+#     """
+#     Perform prediction on input data
+#     """
+
+#     logger.info('API predict called')
+#     logger.info(f'input: {body}')
+
+#     # prepare input data
+#     X = [body.sepal_length, body.sepal_width,
+#          body.petal_length, body.petal_width]
+
+#     # run model inference
+#     y = predict(app.package, [X])[0]
+
+#     # generate prediction based on probablity
+#     pred = ['setosa', 'versicolor', 'virginica'][y.argmax()]
+
+#     # round probablities for json
+#     y = y.tolist()
+#     y = list(map(lambda v: round(v, ndigits=CONFIG['ROUND_DIGIT']), y))
+
+#     # prepare json for returning
+#     results = {
+#         'setosa': y[0],
+#         'versicolor': y[1],
+#         'virginica': y[2],
+#         'pred': pred
+#     }
+
+#     logger.info(f'results: {results}')
+
+#     return {
+#         "error": False,
+#         "results": results
+#     }
+
+@app.post('/api/v1/report',
           response_model=InferenceResponse,
           responses={422: {"model": ErrorResponse},
                      500: {"model": ErrorResponse}}
           )
-def do_predict(request: Request, body: InferenceInput):
+def do_report(request: Request, body: InferenceInput):
     """
-    Perform prediction on input data
+    Perform OCR on input data
     """
 
-    logger.info('API predict called')
+    logger.info('API Report called')
     logger.info(f'input: {body}')
 
-    # prepare input data
-    X = [body.sepal_length, body.sepal_width,
-         body.petal_length, body.petal_width]
+    # download all checks and signature from AWS s3
+    logger.info('Download locally cheks from S3 Bucket')
+    download_all_files_in_folder_from_s3(
+        S3_BUCKET_NAME, S3_CHECK_FOLDERNAME, 'bank-check')
 
-    # run model inference
-    y = predict(app.package, [X])[0]
+    logger.info('Download locally signature from S3 Bucket')
+    download_all_files_in_folder_from_s3(
+        S3_BUCKET_NAME, S3_SIGNATURE_FOLDERNAME, 'bank-signature')
 
-    # generate prediction based on probablity
-    pred = ['setosa', 'versicolor', 'virginica'][y.argmax()]
-
-    # round probablities for json
-    y = y.tolist()
-    y = list(map(lambda v: round(v, ndigits=CONFIG['ROUND_DIGIT']), y))
-
-    # prepare json for returning
-    results = {
-        'setosa': y[0],
-        'versicolor': y[1],
-        'virginica': y[2],
-        'pred': pred
-    }
-
+    # get all relative path of checks and signatures
+    checks_rlv_path = relative_path_files_in_folder('bank-check')
+    signatures_rlv_path = relative_path_files_in_folder('bank-signatures')
+    results = []
+    for check in checks_rlv_path:
+        d = detector(check, app.package['model'])
+        try:
+            val_criteria = InferenceResult(
+                is_crossed=d.detect_bar(),
+                amount_letter=d.montant_lettre(),
+                amount_number=d.montant_chiffre(),
+                # location=' '.join(d.place),
+                # date=' '.join(d.date),
+                # name_recipient=' '.join(d.name),
+                signature_check=d.verif_sign(signatures_rlv_path)
+            )
+            results.append(val_criteria.dict())
+        except:
+            logger.info('Problème avec le check : '+check)
     logger.info(f'results: {results}')
 
     return {
@@ -125,6 +177,8 @@ def show_about():
         "torch.version.cuda": torch.version.cuda,
         "torch.backends.cudnn.version()": torch.backends.cudnn.version(),
         "torch.backends.cudnn.enabled": torch.backends.cudnn.enabled,
+        "tf.__version__": tf.__version__,
+        "tf.config.list_physical_devices('GPU')": tf.config.list_physical_devices('GPU'),
         "nvidia-smi": bash('nvidia-smi')
     }
 

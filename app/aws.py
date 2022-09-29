@@ -11,6 +11,9 @@ s3 = boto3.resource('s3')
 
 
 def download_all_files_in_folder_from_s3(s3_bucket_name: str, s3_folder: str, destination_folder: str) -> None:
+    """
+    This function download all file in a folder in s3 bucket
+    """
     list_s3_files = list_s3_files_in_folder(s3_bucket_name, s3_folder)
     for filename in list_s3_files:
         s3_file_uri = f"s3://{s3_bucket_name}/{s3_folder}/{filename}"
@@ -18,6 +21,9 @@ def download_all_files_in_folder_from_s3(s3_bucket_name: str, s3_folder: str, de
 
 
 def download_file_from_s3(s3_file_uri: str, destination_folder: str) -> None:
+    """
+    This function download a file specified by a s3 uri in a specific local folder
+    """
     cp = CloudPath(s3_file_uri)
     cp.download_to(destination_folder)
 

@@ -1,25 +1,25 @@
 #!/bin/bash
 
-export JOB_NAME="ml-project1"
-export IMAGE="ml/project1"
+export JOB_NAME="OFA-container"
+export IMAGE="oclear-fastapi"
 export TAG="latest"
 export PYTHON_ENV="development"
 export API_PORT=8080
 export WORKERS=2
 export TIMEOUT=300
-export LOG_FOLDER=/var/log/ml-project1
+export LOG_FOLDER=oclear-log
 
 echo ${IMAGE}:${TAG}
 
 # Create log folder if not exists
-if [ ! -d ${LOG_FOLDER} ]; then
-     mkdir ${LOG_FOLDER}
-fi
+# if [ ! -d ${LOG_FOLDER} ]; then
+#      mkdir ${LOG_FOLDER}
+# fi
 
 # Add your authentication command for the docker image registry here
 
 # force pull and update the image, use this in remote host only
-docker pull ${IMAGE}:${TAG}
+# docker pull ${IMAGE}:${TAG}
 
 # stop running container with same job name, if any
 if [ "$(docker ps -a | grep $JOB_NAME)" ]; then

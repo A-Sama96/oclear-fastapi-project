@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build --compress -t ml/project1:latest .
+docker build --compress -t oclear-fastapi:latest .

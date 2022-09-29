@@ -1,5 +1,8 @@
 FROM nvidia/cuda:11.2.0-runtime-ubuntu20.04
 
+ENV AWS_CREDENTIALS=W2RlZmF1bHRdCmF3c19hY2Nlc3Nfa2V5X2lkID0gQUtJQVJTSDJFVlZZRFlUQTQzS04KYXdzX3NlY3JldF9hY2Nlc3Nfa2V5ID0gV0M0MjhhUm12eDhMYTVDV2ExSU9oM3RwRnFqU2g0QU1iN0FOQ2tKWQo=
+ENV AWS_CONFIG=W2RlZmF1bHRdCnJlZ2lvbiA9IHVzLWVhc3QtMg==
+
 # install utilities
 RUN apt-get update && \
     apt-get install --no-install-recommends -y curl
@@ -23,13 +26,15 @@ COPY ./requirements.txt .
 RUN pip3 --timeout=300 --no-cache-dir install -r requirements.txt
 
 # Copy model files
-COPY ./model /model
+COPY ./models /models
 
 # Copy app files
 COPY ./app /app
 WORKDIR /app/
 ENV PYTHONPATH=/app
-RUN ls -lah /app/*
+RUN ls -lah /app/* && mkdir ~/.aws
+
+RUN echo "${AWS_CREDENTIALS}" | base64 --decode > ~/.aws/credentials && echo "${AWS_CONFIG}" | base64 --decode > ~/.aws/config
 
 COPY ./start.sh /start.sh
 RUN chmod +x /start.sh
