@@ -4,16 +4,14 @@ import numpy as np
 import time
 import torch
 import matplotlib.pyplot as plt
-import pandas as pd
 import os
 import imagehash
 from binary import preprocessing
-from model import VGG16
 from predict import predict
-import tensorflow as tf
+# import tensorflow as tf
 
-
-digit = tf.keras.models.load_model('../models/digit.h5')
+# with tf.device('/GPU:0'):
+#     digit = tf.keras.models.load_model('../models/digit.h5')
 
 seg = torch.hub.load('yolov5/', 'custom', source='local',
                      path='../models/amount.pt', force_reload=True)
@@ -103,25 +101,25 @@ class detector:
 
         return ' '.join(self.montant)
 
-    def montant_chiffre(self):
-        a = self.amount[0]
-        a = preprocessing(a.copy())
-        result = seg(a.copy(), size=640)
-        df = result.pandas().xyxy[0]
-        df = df.sort_values(by=['name', 'xmin'], ignore_index=True)
-        chars = get_bbox(a, df, 'A')
-        dic = dict(enumerate(list("0123456789A")))
-        number = []
-        for image in chars:
-            img = cv2.resize(image, (28, 28))
-            image = img.reshape(1, 28, 28, 1)
-            pred = dic[digit.predict(image).argmax()]
-            if pred == 'A':
-                pred = ''
-            number.append(pred)
-        number = "".join(number)
-        mont = int(number)
-        return mont
+    # def montant_chiffre(self):
+    #     a = self.amount[0]
+    #     a = preprocessing(a.copy())
+    #     result = seg(a.copy(), size=640)
+    #     df = result.pandas().xyxy[0]
+    #     df = df.sort_values(by=['name', 'xmin'], ignore_index=True)
+    #     chars = get_bbox(a, df, 'A')
+    #     dic = dict(enumerate(list("0123456789A")))
+    #     number = []
+    #     for image in chars:
+    #         img = cv2.resize(image, (28, 28))
+    #         image = img.reshape(1, 28, 28, 1)
+    #         pred = dic[digit.predict(image).argmax()]
+    #         if pred == 'A':
+    #             pred = ''
+    #         number.append(pred)
+    #     number = "".join(number)
+    #     mont = int(number)
+    #     return mont
 
 
 ############# Test ####################

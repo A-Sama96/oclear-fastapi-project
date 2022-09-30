@@ -24,10 +24,10 @@ class InferenceInput(BaseModel):
     """
     Input values for model inference
     """
-    check_path: List(str) = Field(..., example="['URL1', 'URL2']",
+    check_path: List[str] = Field(..., example=['URL1', 'URL2'],
                                   title="List de lien de chèque provenant de AWS S3")
-    signature_path: str = Field(..., example="['URL1', 'URL2']",
-                                title='List de lien de signature provenant de AWS S3')
+    signature_path: List[str] = Field(..., example=['URL1', 'URL2'],
+                                      title='List de lien de signature provenant de AWS S3')
 
 
 class InferenceResult(BaseModel):
@@ -38,8 +38,8 @@ class InferenceResult(BaseModel):
                              title='Vérifie si le chèque est barré')
     amount_letter: str = Field(..., example='deux cent cinquante milles',
                                title='Montant en lettre')
-    amount_number: str = Field(..., example='250.000',
-                               title='Montant en chiffre')
+    # amount_number: str = Field(..., example='250.000',
+    #                            title='Montant en chiffre')
     # location: str
     # date: str
     # name_recipient: str
@@ -52,7 +52,7 @@ class InferenceResponse(BaseModel):
     Output response for model inference
     """
     error: bool = Field(..., example=False, title='Spécifie si il y a erreur')
-    results: List(InferenceResult) = ...
+    results: List[InferenceResult] = ...
 
 
 class ErrorResponse(BaseModel):

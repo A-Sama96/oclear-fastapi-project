@@ -16,7 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from aws import S3_CHECK_FOLDERNAME
 
 import torch
-import tensorflow as tf
+# import tensorflow as tf
 
 from model import VGG16
 from util import relative_path_files_in_folder
@@ -135,7 +135,7 @@ def do_report(request: Request, body: InferenceInput):
 
     # get all relative path of checks and signatures
     checks_rlv_path = relative_path_files_in_folder('bank-check')
-    signatures_rlv_path = relative_path_files_in_folder('bank-signatures')
+    signatures_rlv_path = relative_path_files_in_folder('bank-signature')
     results = []
     for check in checks_rlv_path:
         d = detector(check, app.package['model'])
@@ -143,7 +143,7 @@ def do_report(request: Request, body: InferenceInput):
             val_criteria = InferenceResult(
                 is_crossed=d.detect_bar(),
                 amount_letter=d.montant_lettre(),
-                amount_number=d.montant_chiffre(),
+                # amount_number=d.montant_chiffre(),
                 # location=' '.join(d.place),
                 # date=' '.join(d.date),
                 # name_recipient=' '.join(d.name),
@@ -177,8 +177,8 @@ def show_about():
         "torch.version.cuda": torch.version.cuda,
         "torch.backends.cudnn.version()": torch.backends.cudnn.version(),
         "torch.backends.cudnn.enabled": torch.backends.cudnn.enabled,
-        "tf.__version__": tf.__version__,
-        "tf.config.list_physical_devices('GPU')": tf.config.list_physical_devices('GPU'),
+        # "tf.__version__": tf.__version__,
+        # "tf.config.list_physical_devices('GPU')": tf.config.list_physical_devices('GPU'),
         "nvidia-smi": bash('nvidia-smi')
     }
 

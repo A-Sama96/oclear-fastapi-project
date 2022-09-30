@@ -4,7 +4,8 @@ from cloudpathlib import CloudPath
 S3_BUCKET_NAME = "oclear-107898776944-bucket"
 # S3_CHECK_URI = 's3://'+S3_BUCKET_NAME+'/ecobank-check-s3/'
 # S3_SIGNATURE_URI = 's3://'+S3_BUCKET_NAME+'/ecobank-signature-s3/'
-S3_CHECK_FOLDERNAME = 'ecobank-check-s3'
+# S3_CHECK_FOLDERNAME = 'ecobank-check-s3'
+S3_CHECK_FOLDERNAME = 'ecobank-test'
 S3_SIGNATURE_FOLDERNAME = 'ecobank-signature-s3'
 
 s3 = boto3.resource('s3')
