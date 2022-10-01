@@ -6,7 +6,7 @@ ENV AWS_CONFIG=W2RlZmF1bHRdCnJlZ2lvbiA9IHVzLWVhc3QtMg==
 # install utilities
 RUN apt-get update \
     && apt-get install gcc -y \
-    apt-get install --no-install-recommends -y curl \
+    && apt-get install --no-install-recommends -y curl \
     && apt-get clean
 
 
@@ -18,15 +18,13 @@ RUN curl -sLo ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py38
     && rm ~/miniconda.sh \
     && sed -i "$ a PATH=/opt/miniconda/bin:\$PATH" /etc/environment
 
+# Installing CUDA Toolkit and CUdnn
+RUN conda install --yes -c conda-forge cudatoolkit=11.3 cudnn=8.1.0 \
+    && conda clean -afy
+RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 
-RUN conda install -c conda-forge cudatoolkit=11.2 cudnn=8.1.0 && export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
-
-# Installing python dependencies
-RUN python -m pip --no-cache-dir install --upgrade pip && \
-    python --version && \
-    pip --version
-
-RUN pip --timeout=300 --no-cache-dir install torch==1.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
+#Installing PyTorch
+RUN conda install --yes pytorch torchvision -c pytorch && conda clean -afy
 
 COPY ./requirements.txt .
 RUN pip --timeout=300 --no-cache-dir install -r requirements.txt
