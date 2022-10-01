@@ -38,8 +38,8 @@ class InferenceResult(BaseModel):
                              title='Vérifie si le chèque est barré')
     amount_letter: str = Field(..., example='deux cent cinquante milles',
                                title='Montant en lettre')
-    # amount_number: str = Field(..., example='250.000',
-    #                            title='Montant en chiffre')
+    amount_number: str = Field(..., example='250.000',
+                               title='Montant en chiffre')
     # location: str
     # date: str
     # name_recipient: str

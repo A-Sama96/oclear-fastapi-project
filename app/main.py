@@ -16,16 +16,19 @@ from fastapi.staticfiles import StaticFiles
 from aws import S3_CHECK_FOLDERNAME
 
 import torch
-# import tensorflow as tf
+import tensorflow as tf
 
 from model import VGG16
-from util import relative_path_files_in_folder
+from util import relative_path_files_in_folder, remove_all_files_in_folder
 from aws import download_all_files_in_folder_from_s3, S3_BUCKET_NAME, S3_SIGNATURE_FOLDERNAME
 from oclear import detector
 from predict import predict
 from config import CONFIG
 from exception_handler import validation_exception_handler, python_exception_handler
 from schema import *
+
+CHEKS_FOLDERNAME = "./images/cheks"
+SIGNATURES_FOLDERNAME = "./images/signatures"
 
 # Initialize API Server
 app = FastAPI(
@@ -54,7 +57,7 @@ async def startup_event():
     Initialize FastAPI and add variables
     """
 
-    logger.info('Running envirnoment: {}'.format(CONFIG['ENV']))
+    logger.info('Running environment: {}'.format(CONFIG['ENV']))
     logger.info('PyTorch using device: {}'.format(CONFIG['DEVICE']))
 
     # Initialize the pytorch model
@@ -125,17 +128,17 @@ def do_report(request: Request, body: InferenceInput):
     logger.info(f'input: {body}')
 
     # download all checks and signature from AWS s3
-    logger.info('Download locally cheks from S3 Bucket')
+    logger.info('Download in local all cheks from S3 Bucket')
     download_all_files_in_folder_from_s3(
-        S3_BUCKET_NAME, S3_CHECK_FOLDERNAME, 'bank-check')
+        S3_BUCKET_NAME, S3_CHECK_FOLDERNAME, CHEKS_FOLDERNAME)
 
-    logger.info('Download locally signature from S3 Bucket')
+    logger.info('Download in local all signatures from S3 Bucket')
     download_all_files_in_folder_from_s3(
-        S3_BUCKET_NAME, S3_SIGNATURE_FOLDERNAME, 'bank-signature')
+        S3_BUCKET_NAME, S3_SIGNATURE_FOLDERNAME, SIGNATURES_FOLDERNAME)
 
     # get all relative path of checks and signatures
-    checks_rlv_path = relative_path_files_in_folder('bank-check')
-    signatures_rlv_path = relative_path_files_in_folder('bank-signature')
+    checks_rlv_path = relative_path_files_in_folder(CHEKS_FOLDERNAME)
+    signatures_rlv_path = relative_path_files_in_folder(SIGNATURES_FOLDERNAME)
     results = []
     for check in checks_rlv_path:
         d = detector(check, app.package['model'])
@@ -143,7 +146,7 @@ def do_report(request: Request, body: InferenceInput):
             val_criteria = InferenceResult(
                 is_crossed=d.detect_bar(),
                 amount_letter=d.montant_lettre(),
-                # amount_number=d.montant_chiffre(),
+                amount_number=d.montant_chiffre(),
                 # location=' '.join(d.place),
                 # date=' '.join(d.date),
                 # name_recipient=' '.join(d.name),
@@ -153,6 +156,11 @@ def do_report(request: Request, body: InferenceInput):
         except:
             logger.info('Problème avec le check : '+check)
     logger.info(f'results: {results}')
+
+    logger.info("Star remove all local cheks and signatures ...")
+    remove_all_files_in_folder(CHEKS_FOLDERNAME)
+    remove_all_files_in_folder(SIGNATURES_FOLDERNAME)
+    logger.info("Done: all local cheks and signatures are deleted !")
 
     return {
         "error": False,
@@ -177,8 +185,8 @@ def show_about():
         "torch.version.cuda": torch.version.cuda,
         "torch.backends.cudnn.version()": torch.backends.cudnn.version(),
         "torch.backends.cudnn.enabled": torch.backends.cudnn.enabled,
-        # "tf.__version__": tf.__version__,
-        # "tf.config.list_physical_devices('GPU')": tf.config.list_physical_devices('GPU'),
+        "tf.__version__": tf.__version__,
+        "tf.config.list_physical_devices('GPU')": tf.config.list_physical_devices('GPU'),
         "nvidia-smi": bash('nvidia-smi')
     }
 
