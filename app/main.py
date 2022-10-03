@@ -191,8 +191,8 @@ def show_about():
     }
 
 
-if __name__ == '__main__':
-    # server api
-    uvicorn.run("main:app", host="0.0.0.0", port=8080,
-                reload=True, debug=True, log_config="log.ini"
-                )
+# if __name__ == '__main__':
+#     # server api
+#     uvicorn.run("main:app", host="0.0.0.0", port=8080,
+#                 reload=True, debug=True, log_config="log.ini"
+#                 )

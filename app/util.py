@@ -36,4 +36,4 @@ def remove_all_files_in_folder(folder: str) -> None:
             os.remove(path)
 
 
-remove_all_files_in_folder('./images/signatures')
+

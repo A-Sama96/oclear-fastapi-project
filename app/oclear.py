@@ -10,8 +10,8 @@ from binary import preprocessing
 from predict import predict
 import tensorflow as tf
 
-# with tf.device('/GPU:0'):
-digit = tf.keras.models.load_model('../models/digit.h5')
+with tf.device('/GPU:0'):
+    digit = tf.keras.models.load_model('../models/digit.h5')
 
 seg = torch.hub.load('yolov5/', 'custom', source='local',
                      path='../models/amount.pt', force_reload=True)
