@@ -44,4 +44,5 @@ COPY ./start.sh /start.sh
 RUN chmod +x /start.sh
 
 EXPOSE 80
-CMD ["/start.sh"]
+# CMD ["/start.sh"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
