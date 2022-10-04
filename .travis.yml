@@ -6,8 +6,8 @@ services:
 install:
   # install awscli v2 if not available
   - if ! [ -x "$(command -v aws)" ]; then curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" ; unzip awscliv2.zip ; sudo ./aws/install ; fi
+  - mkdir models ~/.aws
   - echo "$AWS_CREDENTIALS" | base64 --decode > ~/.aws/credentials && echo "$AWS_CONFIG" | base64 --decode > ~/.aws/config
-  - mkdir models
   - aws s3 sync s3://oclear-107898776944-bucket/models models
   - ls models
 
