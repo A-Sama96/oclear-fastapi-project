@@ -4,7 +4,10 @@ services:
 
 # Pre-testing installs
 install:
-  - echo "nothing needs to be installed"
+  - echo "$AWS_CREDENTIALS" | base64 --decode > ~/.aws/credentials && echo "$AWS_CONFIG" | base64 --decode > ~/.aws/config
+  - mkdir models
+  - aws s3 sync s3://oclear-107898776944-bucket/models models
+  - ls models
 
 # Scripts to be run such as tests
 before_script:
