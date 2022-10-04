@@ -10,6 +10,7 @@ from binary import preprocessing
 from predict import predict
 import tensorflow as tf
 
+
 with tf.device('/GPU:0'):
     digit = tf.keras.models.load_model('../models/digit.h5')
 
