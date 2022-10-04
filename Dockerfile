@@ -24,7 +24,7 @@ RUN python3 -m pip --no-cache-dir install --upgrade pip && \
     python3 --version && \
     pip3 --version
 
-RUN pip3 --timeout=300 --no-cache-dir install torch==1.12.1+cu116 -f https://download.pytorch.org/whl/cu116/torch_stable.html
+RUN pip3 --timeout=300 --no-cache-dir install torch torchvision --extra-index-url https://download.pytorch.org/whl/cu116
 
 COPY ./requirements.txt .
 RUN pip3 --timeout=300 --no-cache-dir install -r requirements.txt
