@@ -4,8 +4,8 @@ services:
 
 # Pre-testing installs
 install:
+  - mkdir models ~/.aws
   - echo "$AWS_CREDENTIALS" | base64 --decode > ~/.aws/credentials && echo "$AWS_CONFIG" | base64 --decode > ~/.aws/config
-  - mkdir models
   - aws s3 sync s3://oclear-107898776944-bucket/models models
   - ls models
 
