@@ -18,10 +18,10 @@ RUN curl -sLo ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py38
 
 
 RUN conda install -c conda-forge cudatoolkit=11.6 && \
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/ && \
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 
-    # Installing python dependencies
-    RUN python3 -m pip --no-cache-dir install --upgrade pip && \
+# Installing python dependencies
+RUN python3 -m pip --no-cache-dir install --upgrade pip && \
     python3 --version && \
     pip3 --version
 
