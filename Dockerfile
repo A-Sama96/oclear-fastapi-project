@@ -19,14 +19,13 @@ RUN curl -sLo ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py38
 
 RUN conda install -c conda-forge cudatoolkit=11.6 && \
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/ && \
-    export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
-# Installing python dependencies
-RUN python3 -m pip --no-cache-dir install --upgrade pip && \
+    # Installing python dependencies
+    RUN python3 -m pip --no-cache-dir install --upgrade pip && \
     python3 --version && \
     pip3 --version
 
-RUN pip3 --timeout=300 --no-cache-dir install torch==1.12.1+cu116 -f https://download.pytorch.org/whl/cu116/torch_stable.html
+RUN pip3 --timeout=300 --no-cache-dir install torch torchvision --extra-index-url https://download.pytorch.org/whl/cu116
 
 COPY ./requirements.txt .
 RUN pip3 --timeout=300 --no-cache-dir install -r requirements.txt

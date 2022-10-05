@@ -30,6 +30,7 @@ fi
 docker run -d \
   --gpus all \
   -p ${API_PORT}:80 \
+  -e "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python" \
   -e "WORKERS=${WORKERS}" \
   -e "TIMEOUT=${TIMEOUT}" \
   -e "PYTHON_ENV=${PYTHON_ENV}" \
