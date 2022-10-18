@@ -27,7 +27,7 @@ if [ "$(docker ps -a | grep $JOB_NAME)" ]; then
 fi
 
 # start docker container
-docker run -d \
+echo docker run -d \
   --gpus all \
   -p ${API_PORT}:80 \
   -e "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python" \
