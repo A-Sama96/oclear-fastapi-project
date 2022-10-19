@@ -8,6 +8,7 @@ S3_BUCKET_NAME = "oclear-107898776944-bucket"
 S3_CHECK_FOLDERNAME = 'ecobank-test'
 S3_SIGNATURE_FOLDERNAME = 'ecobank-signature-s3'
 
+
 s3 = boto3.resource('s3')
 
 

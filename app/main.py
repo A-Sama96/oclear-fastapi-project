@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 import os
 import sys
 import traceback
@@ -154,7 +155,8 @@ def do_report(request: Request, body: InferenceInput):
             )
             results.append(val_criteria.dict())
         except:
-            logger.info('Problème avec le check : '+check)
+            logger.warning('Problème avec le check : '+check)
+
     logger.info(f'results: {results}')
 
     logger.info("Star remove all local cheks and signatures ...")
