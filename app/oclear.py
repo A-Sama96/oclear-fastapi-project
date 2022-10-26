@@ -9,15 +9,17 @@ import imagehash
 from binary import preprocessing
 from predict import predict
 import tensorflow as tf
+from text_to_num import text2num
 
 with tf.device('/CPU'):
     digit = tf.keras.models.load_model('../models/digit.h5')
 
 seg = torch.hub.load('yolov5/', 'custom', source='local',
-                     path='../models/amount.pt', force_reload=True)
+                     path='../models/amount.pt', force_reload=True, device='cpu')
 model = torch.hub.load('yolov5/', 'custom', source='local',
-                       path='../models/best.pt', force_reload=True)
-
+                       path='../models/best.pt', force_reload=True, device='cpu')
+seg_dd=torch.hub.load('yolov5/', 'custom', source='local', path = '../models/seg_dd.pt', force_reload = True, device='cpu')
+seg_date=torch.hub.load('yolov5/', 'custom',source='local', path='../models/seg_date.pt', force_reload=True, device='cpu')
 
 def detect(path, model):
     start = time.time()
@@ -120,7 +122,68 @@ class detector:
         number = "".join(number)
         mont = int(number)
         return mont
+    
+    def pred_date(self):
+        try:
+            a=self.date[0]
+            img=preprocessing(a.copy())
+            result=seg_date(img,size=640)
+            df=result.pandas().xyxy[0]
+            df=df.sort_values(by='xmin',ignore_index=True)
+            bbox=get_bbox(img,df,'d')
+            final=[]
+            for i in  range(len(bbox)):
+                b=bbox[i]
+                result=seg_dd(b.copy(),size=640)
+                df=result.pandas().xyxy[0]
+                df=df.sort_values(by='xmin',ignore_index=True)
+                chars=get_bbox(b,df,'d')
+                format=[]
+                for image in chars:
+                    img=cv2.resize(image,(28,28))
+                    img=img.reshape(1,28,28,1)
+                    if digit.predict(img).argmax()!=10:
+                        pred=str(digit.predict(img).argmax())
+                    else:
+                        pred=''
+                    format.append(pred)
+                format="".join(format)
+                final.append(format)
+                if i!=len(bbox)-1:
+                    final.append('/')
+            final="".join(final)
+        except:
+            final=''
+        return final
 
+    def correct_mont(self,l): #nouveau
+        f=[]
+        i=0
+        while i<len(l)-1:
+            if (l[i] =='dix' and (l[i+1] in {'neuf','sept','huit'})) or (l[i] =='quatre'and l[i+1]=='vingt'):
+                f.append(l[i]+'-'+l[i+1])
+                i+=2
+            else:
+                f.append(l[i])
+                i+=1
+        if i==len(l)-1:
+            f.append(l[i])
+        return f
+
+    def conforme(self):  #nouveau
+        try:
+            d=self.montant
+            d=[i for i in d if i not in {'de','franc','fcfa','cfa','et'}]
+            d=self.correct_mont(d)
+            d=' '.join(d)
+            d=text2num(d,'fr')
+            
+            if d==self.montant_chiffre():
+                return True
+            else:
+                return False
+        except:
+            return False
 
 ############# Test ####################
 # liste = []

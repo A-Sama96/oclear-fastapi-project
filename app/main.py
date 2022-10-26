@@ -149,7 +149,8 @@ def do_report(request: Request, body: InferenceInput):
                 amount_letter=d.montant_lettre(),
                 amount_number=d.montant_chiffre(),
                 # location=' '.join(d.place),
-                # date=' '.join(d.date),
+                date=d.pred_date(),
+                amounts_compliance=d.conforme(),
                 # name_recipient=' '.join(d.name),
                 signature_check=d.verif_sign(signatures_rlv_path)
             )

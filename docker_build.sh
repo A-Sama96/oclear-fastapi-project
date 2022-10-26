@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build --compress -t oclear-fastapi:latest .
+docker build --compress -t oclear-fastapi:cpu .

@@ -41,7 +41,10 @@ class InferenceResult(BaseModel):
     amount_number: str = Field(..., example='250.000',
                                title='Montant en chiffre')
     # location: str
-    # date: str
+    date: str = Field(..., example='08/12/2021',
+                               title='Date sur le check')
+    amounts_compliance: bool = Field(..., example=False,
+                              title='Vérifie si les montants en chiffre et en lettre sont conforme')
     # name_recipient: str
     signature_check: List[float] = Field(..., example='[80.9]',
                                          title='Taux de correspondace de la signature')
