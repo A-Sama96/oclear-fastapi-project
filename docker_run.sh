@@ -3,7 +3,7 @@
 export JOB_NAME="OFA-container"
 export IMAGE="asanjaata96/oclear-fastapi"
 export TAG="latest"
-export PYTHON_ENV="development"
+export PYTHON_ENV="production"
 export API_PORT=8080
 export WORKERS=2
 export TIMEOUT=300
