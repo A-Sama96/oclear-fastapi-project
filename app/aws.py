@@ -1,12 +1,13 @@
 import re
 import boto3
 from cloudpathlib import CloudPath
-S3_BUCKET_NAME = "oclear-107898776944-bucket"
+import os
+
+S3_BUCKET_NAME = os.environ['S3_BUCKET_NAME'] if 'S3_BUCKET_NAME' in os.environ else "oclear-107898776944-bucket"
 # S3_CHECK_URI = 's3://'+S3_BUCKET_NAME+'/ecobank-check-s3/'
 # S3_SIGNATURE_URI = 's3://'+S3_BUCKET_NAME+'/ecobank-signature-s3/'
-# S3_CHECK_FOLDERNAME = 'ecobank-check-s3'
-S3_CHECK_FOLDERNAME = 'ecobank-test'
-S3_SIGNATURE_FOLDERNAME = 'ecobank-signature-s3'
+S3_CHECK_FOLDERNAME = os.environ['S3_CHECK_FOLDERNAME'] if 'S3_CHECK_FOLDERNAME' in os.environ else 'ecobank-check-s3'
+S3_SIGNATURE_FOLDERNAME = os.environ['3_SIGNATURE_FOLDERNAME'] if '3_SIGNATURE_FOLDERNAME' in os.environ else 'ecobank-signature-s3'
 
 
 s3 = boto3.resource('s3')
