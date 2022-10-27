@@ -104,7 +104,6 @@ async def do_report(file: UploadFile = File(description="A file read as UploadFi
         logger.error("The cheks or signatures folder does not exist")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='The cheks or signatures folder does not exist')
-    errorRead = False
     results = []
     errorReadCheckName = []
     for check in checks_rlv_path:
