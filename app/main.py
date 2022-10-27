@@ -3,11 +3,12 @@
 
 import logging
 import os
+import shutil
 import sys
 import traceback
 
 import uvicorn
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status
 from fastapi.logger import logger
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import RedirectResponse, JSONResponse
@@ -20,7 +21,7 @@ import torch
 import tensorflow as tf
 
 from model import VGG16
-from util import relative_path_files_in_folder, remove_all_files_in_folder
+from util import abs_path, relative_path_files_in_folder, remove_all_files_in_folder, remove_file, save_uploaded_zipfile, unzip_file_in_folder
 from aws import download_all_files_in_folder_from_s3, S3_BUCKET_NAME, S3_SIGNATURE_FOLDERNAME
 from oclear import detector
 from predict import predict
@@ -68,79 +69,44 @@ async def startup_event():
 
     # add model and other preprocess tools too app state
     app.package = {
-        # "scaler": load(CONFIG['SCALAR_PATH']),  # joblib.load
         "model": vgg
     }
 
 
-# @app.post('/api/v1/predict',
-#           response_model=InferenceResponse,
-#           responses={422: {"model": ErrorResponse},
-#                      500: {"model": ErrorResponse}}
-#           )
-# def do_predict(request: Request, body: InferenceInput):
-#     """
-#     Perform prediction on input data
-#     """
-
-#     logger.info('API predict called')
-#     logger.info(f'input: {body}')
-
-#     # prepare input data
-#     X = [body.sepal_length, body.sepal_width,
-#          body.petal_length, body.petal_width]
-
-#     # run model inference
-#     y = predict(app.package, [X])[0]
-
-#     # generate prediction based on probablity
-#     pred = ['setosa', 'versicolor', 'virginica'][y.argmax()]
-
-#     # round probablities for json
-#     y = y.tolist()
-#     y = list(map(lambda v: round(v, ndigits=CONFIG['ROUND_DIGIT']), y))
-
-#     # prepare json for returning
-#     results = {
-#         'setosa': y[0],
-#         'versicolor': y[1],
-#         'virginica': y[2],
-#         'pred': pred
-#     }
-
-#     logger.info(f'results: {results}')
-
-#     return {
-#         "error": False,
-#         "results": results
-#     }
 
 @app.post('/api/v1/report',
           response_model=InferenceResponse,
           responses={422: {"model": ErrorResponse},
                      500: {"model": ErrorResponse}}
           )
-def do_report(request: Request, body: InferenceInput):
+async def do_report(file: UploadFile = File(description="A file read as UploadFile")):
     """
     Perform OCR on input data
     """
 
     logger.info('API Report called')
-    logger.info(f'input: {body}')
+    logger.info(f'File name: {file.filename}')
+    await save_uploaded_zipfile(file)
+    logger.info(f'{file.filename} was uploaded')
 
-    # download all checks and signature from AWS s3
-    logger.info('Download in local all cheks from S3 Bucket')
-    download_all_files_in_folder_from_s3(
-        S3_BUCKET_NAME, S3_CHECK_FOLDERNAME, CHEKS_FOLDERNAME)
+    logger.info(f'Start decompress {file.filename}')
+    rlv_path_to_file = './images/' + file.filename
+    unzip_file_in_folder(rlv_path_to_file)
+    logger.info(f'Finish decompress {file.filename}')
 
-    logger.info('Download in local all signatures from S3 Bucket')
-    download_all_files_in_folder_from_s3(
-        S3_BUCKET_NAME, S3_SIGNATURE_FOLDERNAME, SIGNATURES_FOLDERNAME)
+    remove_file(rlv_path_to_file)
 
     # get all relative path of checks and signatures
-    checks_rlv_path = relative_path_files_in_folder(CHEKS_FOLDERNAME)
-    signatures_rlv_path = relative_path_files_in_folder(SIGNATURES_FOLDERNAME)
+    if os.path.isdir(abs_path(CHEKS_FOLDERNAME)) and os.path.isdir(abs_path(SIGNATURES_FOLDERNAME)):
+        checks_rlv_path = relative_path_files_in_folder(CHEKS_FOLDERNAME)
+        signatures_rlv_path = relative_path_files_in_folder(SIGNATURES_FOLDERNAME)
+    else:
+        logger.error("The cheks or signatures folder does not exist")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='The cheks or signatures folder does not exist')
+    errorRead = False
     results = []
+    errorReadCheckName = []
     for check in checks_rlv_path:
         d = detector(check, app.package['model'])
         try:
@@ -156,18 +122,21 @@ def do_report(request: Request, body: InferenceInput):
             )
             results.append(val_criteria.dict())
         except:
-            logger.warning('Problème avec le check : '+check)
+            errorRead = True
+            errorReadCheckName.append(check)
+            logger.warning('Error reading with check : '+check)
 
     logger.info(f'results: {results}')
 
     logger.info("Star remove all local cheks and signatures ...")
-    remove_all_files_in_folder(CHEKS_FOLDERNAME)
-    remove_all_files_in_folder(SIGNATURES_FOLDERNAME)
+    shutil.rmtree(CHEKS_FOLDERNAME, ignore_errors=True)
+    shutil.rmtree(SIGNATURES_FOLDERNAME, ignore_errors=True)
     logger.info("Done: all local cheks and signatures are deleted !")
 
     return {
-        "error": False,
-        "results": results
+        "error": errorRead,
+        "results": results,
+        "errorReadChecksName": errorReadCheckName
     }
 
 

@@ -22,7 +22,7 @@ class ValidationCriteria(BaseModel):
 
 class InferenceInput(BaseModel):
     """
-    Input values for model inference
+    Input zip File
     """
     check_path: List[str] = Field(..., example=['URL1', 'URL2'],
                                   title="List de lien de chèque provenant de AWS S3")
@@ -56,6 +56,7 @@ class InferenceResponse(BaseModel):
     """
     error: bool = Field(..., example=False, title='Spécifie si il y a erreur')
     results: List[InferenceResult] = ...
+    errorReadCheckName: list = ...
 
 
 class ErrorResponse(BaseModel):

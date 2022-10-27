@@ -3,6 +3,11 @@
 
 import os
 import shutil
+import aiofiles
+from fastapi import HTTPException, UploadFile, status
+from zipfile import ZipFile
+from fastapi.logger import logger
+
 
 
 def abs_path(p: str) -> str:
@@ -36,4 +41,37 @@ def remove_all_files_in_folder(folder: str) -> None:
             os.remove(path)
 
 
+async def save_uploaded_zipfile(file: UploadFile,rlv_path_folder: str = "./images/", CHUNK_SIZE = 1024 * 1024):
+    if file.content_type not in ["application/zip", "application/octet-stream", "application/x-zip-compressed"]:
+        logger.error(f'File type of {file.content_type} is not supported')
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File type of {file.content_type} is not supported",
+        )
+    try:
+        filepath = os.path.join(rlv_path_folder, os.path.basename(file.filename))
+        async with aiofiles.open(filepath, 'wb') as f:
+            while chunk := await file.read(CHUNK_SIZE):
+                await f.write(chunk)
+    except Exception:
+        logger.error('There was an error uploading the file')
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            detail='There was an error uploading the file')
+    finally:
+        await file.close()
 
+def unzip_file_in_folder(path_to_zip_file, directory_to_extract_to = './images'):
+    try:
+        with ZipFile(path_to_zip_file, 'r') as zip_ref:
+            zip_ref.extractall(directory_to_extract_to)
+    except Exception:
+        logger.error('There was an error unzipping the file')
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            detail='There was an error unzipping the file')
+
+def remove_file(path_to_file):
+    if os.path.exists(path_to_file):
+        os.remove(path_to_file)
+        logger.info(f'File deleted: {path_to_file}')
+    else:
+        logger.error("The file does not exist")
