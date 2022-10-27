@@ -11,7 +11,7 @@ from predict import predict
 import tensorflow as tf
 from text_to_num import text2num
 
-with tf.device('/CPU'):
+with tf.device('/cpu:0'):
     digit = tf.keras.models.load_model('../models/digit.h5')
 
 seg = torch.hub.load('yolov5/', 'custom', source='local',

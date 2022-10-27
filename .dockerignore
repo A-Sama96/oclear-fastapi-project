@@ -1,1 +1,5 @@
 notebook/
+app/log/*
+app/*.sh
+env/
+k8s/

@@ -7,12 +7,14 @@ ENV AWS_CONFIG=W2RlZmF1bHRdCnJlZ2lvbiA9IHVzLWVhc3QtMg==
 RUN apt-get update \
     && apt-get install gcc -y \
     && apt-get install --no-install-recommends -y curl \
+    && apt-get install ffmpeg libsm6 libxext6  -y \
     && apt-get clean
 
 COPY ./requirements.txt .
 RUN pip --timeout=300 --no-cache-dir install -r requirements.txt
-RUN pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu
+RUN pip --no-cache-dir install torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu
 # Copy model files
+RUN pip cache purge
 COPY ./models /models
 
 # Copy app files
