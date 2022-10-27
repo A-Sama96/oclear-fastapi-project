@@ -16,3 +16,5 @@ ipykernel==6.15.1
 gunicorn==20.1.0
 tensorflow-cpu==2.8.0
 text2num==2.4.0
+python-multipart==0.0.5
+aiofiles==22.1.0

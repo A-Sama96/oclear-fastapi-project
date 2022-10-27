@@ -17,10 +17,10 @@ before_script:
 
 script:
   - docker --version # print the version for logging
-  - docker build --compress -t oclear-fastapi:cpu .
-  - docker tag oclear-fastapi:cpu asanjaata96/oclear-fastapi:cpu
+  - docker build --compress -t oclear-fastapi:cpu-local .
+  - docker tag oclear-fastapi:cpu-local asanjaata96/oclear-fastapi:cpu-local
 
 # Tasks to perform after the process is successful. Formatting the Docker username and password as below enables you to programmatically log in without having the password exposed in logs.
 after_success:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker push asanjaata96/oclear-fastapi:cpu
+  - docker push asanjaata96/oclear-fastapi:cpu-local
