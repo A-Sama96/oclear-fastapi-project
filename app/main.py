@@ -106,6 +106,7 @@ async def do_report(file: UploadFile = File(description="A file read as UploadFi
             detail='The cheks or signatures folder does not exist')
     results = []
     errorReadCheckName = []
+    errorRead = False
     for check in checks_rlv_path:
         d = detector(check, app.package['model'])
         try:
