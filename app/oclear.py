@@ -13,6 +13,8 @@ from text_to_num import text2num
 
 with tf.device('/cpu:0'):
     digit = tf.keras.models.load_model('../models/digit.h5')
+    digits = tf.keras.models.load_model('../models/digits.h5')
+    date = tf.keras.models.load_model('date.h5')
 
 seg = torch.hub.load('yolov5/', 'custom', source='local',
                      path='../models/amount.pt', force_reload=True, device='cpu')
@@ -115,7 +117,7 @@ class detector:
         for image in chars:
             img = cv2.resize(image, (28, 28))
             image = img.reshape(1, 28, 28, 1)
-            pred = dic[digit.predict(image).argmax()]
+            pred = dic[digits.predict(image).argmax()]
             if pred == 'A':
                 pred = ''
             number.append(pred)
@@ -142,12 +144,14 @@ class detector:
                 for image in chars:
                     img=cv2.resize(image,(28,28))
                     img=img.reshape(1,28,28,1)
-                    if digit.predict(img).argmax()!=10:
-                        pred=str(digit.predict(img).argmax())
+                    if date.predict(img).argmax()!=10:
+                        pred=str(date.predict(img).argmax()) # Ici le model date
                     else:
                         pred=''
                     format.append(pred)
                 format="".join(format)
+                if (i==0 and int(format)>31) or (i==1 and int(format)>12) : # A ajouter ici 
+                    return '' # A ajouter ici
                 final.append(format)
                 if i!=len(bbox)-1:
                     final.append('/')
