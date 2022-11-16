@@ -1,0 +1,42 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "cpu-local" ]
+  pull_request:
+    branches: [ "cpu-local" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download models
+      run: |
+        if ! [ -x "$(command -v aws)" ]; then curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" ; unzip awscliv2.zip ; sudo ./aws/install ; fi
+        mkdir models ~/.aws
+        echo "${{ secrets.AWS_CREDENTIALS }}" | base64 --decode > ~/.aws/credentials && echo "${{ secrets.AWS_CONFIG }}" | base64 --decode > ~/.aws/config
+        aws s3 sync s3://oclear-107898776944-bucket/models models
+        ls models
+    -
+      name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+    -
+      name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    -
+      name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    -
+      name: Build and push
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: asanjaata96/oclear-fastapi:cpu-local
