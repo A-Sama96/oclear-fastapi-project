@@ -114,10 +114,11 @@ async def do_report(file: UploadFile = File(description="A file read as UploadFi
                 is_crossed=d.detect_bar(),
                 amount_letter=d.montant_lettre(),
                 amount_number=d.montant_chiffre(),
-                # location=' '.join(d.place),
+                location=d.pred_place(),
                 date=d.pred_date(),
                 amounts_compliance=d.conforme(),
                 # name_recipient=' '.join(d.name),
+                endorsable=True,
                 signature_check=d.verif_sign(signatures_rlv_path)
             )
             results.append(val_criteria.dict())
