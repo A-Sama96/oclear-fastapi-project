@@ -10,11 +10,16 @@ from binary import preprocessing
 from predict import predict
 import tensorflow as tf
 from text_to_num import text2num
+from place_correct import answers
+from image_straighten import redress
 
 with tf.device('/cpu:0'):
     digit = tf.keras.models.load_model('../models/digit.h5')
     digits = tf.keras.models.load_model('../models/digits.h5')
-    date = tf.keras.models.load_model('date.h5')
+    date = tf.keras.models.load_model('../models/date.h5')
+    letter = tf.keras.models.load_model('../models/letter.h5')
+
+seg_let=torch.hub.load('yolov5/', 'custom', source='local', path = '../models/2.pt', force_reload = True, device='cpu')
 
 seg = torch.hub.load('yolov5/', 'custom', source='local',
                      path='../models/amount.pt', force_reload=True, device='cpu')
@@ -188,6 +193,31 @@ class detector:
                 return False
         except:
             return False
+
+    def pred_place(self):
+        try:
+            dic=dict(enumerate(list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')))
+            img=preprocessing(self.place[0])
+            img=redress(img)
+            result=seg_let(img,size=640)
+            df=result.pandas().xyxy[0]
+            df=df.sort_values(by='xmin',ignore_index=True)
+            chars=get_bbox(img,df,'A')
+            final=[]
+            for img in chars:
+                img=cv2.resize(img,(28,28))
+                img=img.reshape(1,28,28,1)
+                pred=dic[letter.predict(img).argmax()]
+                final.append(pred)
+            final="".join(final)
+            final=answers(final)
+        except:
+            if len(self.place)==0:
+                return 'Pas de date'
+            else:
+                final=''
+
+        return final
 
 ############# Test ####################
 # liste = []
