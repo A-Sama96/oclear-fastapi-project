@@ -155,7 +155,7 @@ class detector:
                         pred=''
                     format.append(pred)
                 format="".join(format)
-                if (i==0 and int(format)>31) or (i==1 and int(format)>12) : # A ajouter ici 
+                if (i==0 and (int(format)>31 or int(format)==0)) or (i==1 and (int(format)>12 or int(format)==0)) : # A ajouter ici 
                     return '' # A ajouter ici
                 final.append(format)
                 if i!=len(bbox)-1:
