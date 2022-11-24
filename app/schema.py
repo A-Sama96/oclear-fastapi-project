@@ -34,6 +34,8 @@ class InferenceResult(BaseModel):
     """
     Inference result from the model
     """
+    file_name: str = Field(..., example='20190316-SN099SN0991000002190017823951Recto.jpg',
+                               title='Nom du fichier image')
     is_crossed: bool = Field(..., example=False,
                              title='Vérifie si le chèque est barré')
     amount_letter: str = Field(..., example='deux cent cinquante milles',

@@ -111,6 +111,7 @@ async def do_report(file: UploadFile = File(description="A file read as UploadFi
         d = detector(check, app.package['model'])
         try:
             val_criteria = InferenceResult(
+                file_name=check.split('/')[-1],
                 is_crossed=d.detect_bar(),
                 amount_letter=d.montant_lettre(),
                 amount_number=d.montant_chiffre(),
@@ -124,8 +125,8 @@ async def do_report(file: UploadFile = File(description="A file read as UploadFi
             results.append(val_criteria.dict())
         except:
             errorRead = True
-            errorReadCheckName.append(check)
-            logger.warning('Error reading with check : '+check)
+            errorReadCheckName.append(check.split('/')[-1])
+            logger.warning('Error reading with check : '+check.split('/')[-1])
 
     logger.info(f'results: {results}')
 
